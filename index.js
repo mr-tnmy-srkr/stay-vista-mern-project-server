@@ -108,6 +108,7 @@ run().catch(console.dir) */
 
 async function run() {
   try {
+    const usersCollection = client.db('stayVistaDB').collection('users')
     // auth related api
     app.post('/jwt', async (req, res) => {
       try {
