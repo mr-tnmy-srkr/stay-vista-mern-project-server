@@ -8,6 +8,7 @@ const jwt = require("jsonwebtoken");
 const morgan = require("morgan");
 const { ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 
 // middleware
 const corsOptions = {
@@ -111,6 +112,8 @@ async function run() {
   try {
     const usersCollection = client.db("stayVistaDB").collection("users");
     const roomsCollection = client.db("stayVistaDB").collection("rooms");
+    const bookingsCollection = client.db("stayVistaDB").collection("bookings");
+
     // auth related api
     app.post("/jwt", async (req, res) => {
       try {
@@ -170,12 +173,12 @@ async function run() {
       }
     });
 
-     // Get user role
-     app.get('/user/:email', async (req, res) => {
-      const email = req.params.email
-      const result = await usersCollection.findOne({ email })
-      res.send(result)
-    })
+    // Get user role
+    app.get("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await usersCollection.findOne({ email });
+      res.send(result);
+    });
 
     //get all rooms
     app.get("/rooms", async (req, res) => {
@@ -205,6 +208,19 @@ async function run() {
       const room = req.body;
       const result = await roomsCollection.insertOne(room);
       res.send(result);
+    });
+
+    // Generate client secret for stripe payment
+    app.post("/create-payment-intent", verifyToken, async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      if (!price || amount < 1) return;
+      const { client_secret } = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({ clientSecret: client_secret });
     });
 
     // Send a ping to confirm a successful connection
