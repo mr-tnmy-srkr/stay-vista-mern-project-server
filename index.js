@@ -268,11 +268,17 @@ async function run() {
       res.send(result);
     });
     // Get all bookings for host
-    app.get("/bookings/host", verifyToken, verifyHost, async (req, res) => {
+    app.get("/bookings/host", verifyToken, async (req, res) => {
       const email = req.query.email;
       if (!email) return res.send([]);
       const query = { host: email };
       const result = await bookingsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // Get all users
+    app.get("/users", verifyToken, async (req, res) => {
+      const result = await usersCollection.find().toArray();
       res.send(result);
     });
 
