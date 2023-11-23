@@ -217,10 +217,63 @@ async function run() {
       if (!price || amount < 1) return;
       const { client_secret } = await stripe.paymentIntents.create({
         amount: amount,
-        currency: "usd",
+        // currency: "usd",
+        currency: "inr",
         payment_method_types: ["card"],
       });
       res.send({ clientSecret: client_secret });
+    });
+
+    // Save booking info in booking collection
+    app.post("/bookings", verifyToken, async (req, res) => {
+      const booking = req.body;
+      const result = await bookingsCollection.insertOne(booking);
+      // Send Email.....
+      // if (result.insertedId) {
+      // To guest
+      /*  sendEmail(booking.guest.email, {
+        subject: 'Booking Successful!',
+        message: `Room Ready, chole ashen vai, apnar Transaction Id: ${booking.transactionId}`,
+      }) */
+
+      // To Host
+      /*   sendEmail(booking.host, {
+        subject: 'Your room got booked!',
+        message: `Room theke vago. ${booking.guest.name} ashtese.....`,
+      })
+    } */
+      res.send(result);
+    });
+
+    // Update room booking status
+    app.patch("/rooms/status/:id", async (req, res) => {
+      const id = req.params.id;
+      const status = req.body.status;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          booked: status,
+        },
+      };
+      const result = await roomsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // Get all bookings for guest
+    app.get("/bookings", verifyToken, async (req, res) => {
+      const email = req.query.email;
+      if (!email) return res.send([]);
+      const query = { "guest.email": email };
+      const result = await bookingsCollection.find(query).toArray();
+      res.send(result);
+    });
+    // Get all bookings for host
+    app.get("/bookings/host", verifyToken, verifyHost, async (req, res) => {
+      const email = req.query.email;
+      if (!email) return res.send([]);
+      const query = { host: email };
+      const result = await bookingsCollection.find(query).toArray();
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
