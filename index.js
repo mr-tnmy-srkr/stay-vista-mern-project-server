@@ -20,6 +20,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
+
 const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
   console.log(token);
@@ -113,6 +114,27 @@ async function run() {
     const usersCollection = client.db("stayVistaDB").collection("users");
     const roomsCollection = client.db("stayVistaDB").collection("rooms");
     const bookingsCollection = client.db("stayVistaDB").collection("bookings");
+
+    //Role Verification MiddleWare
+    //For Admin
+    const VerifyAdmin = async (req, res, next) => {
+      const user = req.user;
+      const query = { email: user?.email };
+      const result = await usersCollection.findOne(query);
+      if (!result || result?.role !== "admin")
+        return res.status(401).send({ message: "unauthorized access" });
+      next()
+    };
+
+//For Host
+const VerifyHost = async (req, res, next) => {
+  const user = req.user;
+  const query = { email: user?.email };
+  const result = await usersCollection.findOne(query);
+  if (!result || result?.role !== "host")
+    return res.status(401).send({ message: "unauthorized access" });
+  next()
+};
 
     // auth related api
     app.post("/jwt", async (req, res) => {
@@ -220,7 +242,7 @@ async function run() {
     });
 
     //get rooms for host
-    app.get("/rooms/:email", async (req, res) => {
+    app.get("/rooms/:email",verifyToken,VerifyHost, async (req, res) => {
       const email = req.params.email;
       const result = await roomsCollection
         .find({ "host.email": email })
@@ -301,7 +323,7 @@ async function run() {
       res.send(result);
     });
     // Get all bookings for host
-    app.get("/bookings/host", verifyToken, async (req, res) => {
+    app.get("/bookings/host", verifyToken,VerifyHost, async (req, res) => {
       const email = req.query.email;
       if (!email) return res.send([]);
       const query = { host: email };
@@ -310,7 +332,7 @@ async function run() {
     });
 
     // Get all users
-    app.get("/users", verifyToken, async (req, res) => {
+    app.get("/users", verifyToken,VerifyAdmin, async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
