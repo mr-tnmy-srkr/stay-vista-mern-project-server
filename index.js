@@ -282,6 +282,22 @@ async function run() {
       res.send(result);
     });
 
+    //update user role
+    app.put("/users/update/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const query = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          ...user,
+          timestamp: Date.now(),
+        },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     try {
       await client.db("admin").command({ ping: 1 });
