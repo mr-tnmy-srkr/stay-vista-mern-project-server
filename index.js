@@ -160,6 +160,25 @@ async function run() {
         const isExist = await usersCollection.findOne(query);
         console.log("User found?----->", isExist);
         if (isExist) return res.send(isExist);
+
+        //become a host
+        /* if (isExist) {
+          if (user?.status === "Requested") {
+            const result = await usersCollection.updateOne(
+              query,
+             {
+              $set: {
+               Status:user.status
+              }
+              },
+              options,
+            );
+            return res.send(result);
+          } else {
+            return res.send(isExist);
+          }
+        }
+ */
         const result = await usersCollection.updateOne(
           query,
           {
@@ -171,6 +190,20 @@ async function run() {
       } catch (dbError) {
         res.status(500).send(dbError);
       }
+    });
+    //become a host
+    app.patch("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      console.log(user.status);
+      const query = { email: email };
+      const updateDoc = {
+        $set: {
+          status: user.status,
+        },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc);
+      res.send(result);
     });
 
     // Get user role
