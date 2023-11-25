@@ -266,18 +266,18 @@ async function run() {
       const result = await bookingsCollection.insertOne(booking);
       // Send Email.....
       if (result.insertedId) {
-      // To guest
-      sendEmail(booking.guest.email, {
-        subject: 'Booking Successful!',
-        message: `Room Ready, chole ashen vai, apnar Transaction Id: ${booking.transactionId}`,
-      }) 
+        // To guest
+        sendEmail(booking.guest.email, {
+          subject: "Booking Successful!",
+          message: `Room Ready, chole ashen vai, apnar Transaction Id: ${booking.transactionId}`,
+        });
 
-      // To Host
+        // To Host
         sendEmail(booking.host, {
-        subject: 'Your room got booked!',
-        message: `Room theke vago. ${booking.guest.name} ashtese.....`,
-      })
-    } 
+          subject: "Your room got booked!",
+          message: `Room theke vago. ${booking.guest.name} ashtese.....`,
+        });
+      }
       res.send(result);
     });
 
@@ -342,7 +342,7 @@ async function run() {
           .toArray();
         const userCount = await usersCollection.countDocuments();
         const roomCount = await roomsCollection.countDocuments();
-        const bookingCount =  await bookingsCollection.countDocuments();
+        const bookingCount = await bookingsCollection.countDocuments();
         const totalSale = bookingsDetails.reduce(
           (sum, data) => sum + data.price,
           0
@@ -353,7 +353,7 @@ async function run() {
         }));
 
         // Sending the response outside the map function
-        res.send({ userCount, roomCount,bookingCount, totalSale, chartData });
+        res.send({ userCount, roomCount, bookingCount, totalSale, chartData });
       } catch (error) {
         // Handle errors appropriately
         console.error("Error in /admin-stat:", error);
