@@ -37,7 +37,7 @@ const verifyToken = async (req, res, next) => {
     next();
   });
 };
-
+console.log(process.env.GMAIL_APP_PASS);
 //send email
 const sendEmail = () => {
   //CREATE A TRANSPORTER  (https://nodemailer.com/smtp/)
@@ -52,7 +52,7 @@ const sendEmail = () => {
     },
   });
 
-  //verify connection
+  //verify connection of transporter
   transporter.verify((error, success) => {
     if (error) {
       console.log(error);
@@ -265,19 +265,19 @@ async function run() {
       const booking = req.body;
       const result = await bookingsCollection.insertOne(booking);
       // Send Email.....
-      // if (result.insertedId) {
+      if (result.insertedId) {
       // To guest
-      /*  sendEmail(booking.guest.email, {
+      sendEmail(booking.guest.email, {
         subject: 'Booking Successful!',
         message: `Room Ready, chole ashen vai, apnar Transaction Id: ${booking.transactionId}`,
-      }) */
+      }) 
 
       // To Host
-      /*   sendEmail(booking.host, {
+        sendEmail(booking.host, {
         subject: 'Your room got booked!',
         message: `Room theke vago. ${booking.guest.name} ashtese.....`,
       })
-    } */
+    } 
       res.send(result);
     });
 
