@@ -13,7 +13,7 @@ const nodemailer = require("nodemailer");
 
 // middleware
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: ["http://localhost:5173", "http://localhost:5174","https://stay-vista-mern-project-ae9a6.web.app","https://stay-vista-mern-project.surge.sh"],
   credentials: true,
   optionSuccessStatus: 200,
 };
